@@ -25,10 +25,8 @@ public class FixedWindowRateLimiter implements RateLimiter{
 
     public void cleanWindows() {
         long curWindowKey = System.currentTimeMillis() / windowSizeInMillis;
-        for (Long windowKey: windows.keySet()) {
-            if (windowKey < curWindowKey) {
-                windows.remove(windowKey);
-            }
-        }
+        windows.keySet().forEach(key -> {
+            if (key < curWindowKey) windows.remove(key);
+        });
     }
 }
