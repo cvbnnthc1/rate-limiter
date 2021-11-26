@@ -5,12 +5,12 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class FixedWindowRateLimiter implements RateLimiter{
-    private final long windowSizeInMillis;
-    private final int maxRequestPerSec;
+    private long windowSizeInMillis;
+    volatile private int maxRequestsPerWindow;
     final ConcurrentMap<Long, AtomicInteger> windows = new ConcurrentHashMap<>();
 
-    public FixedWindowRateLimiter(int maxRequestPerSec, long windowSizeInMillis) {
-        this.maxRequestPerSec = maxRequestPerSec;
+    public FixedWindowRateLimiter(int maxRequestsPerWindow, long windowSizeInMillis) {
+        this.maxRequestsPerWindow = maxRequestsPerWindow;
         this.windowSizeInMillis = windowSizeInMillis;
     }
 
@@ -18,7 +18,7 @@ public class FixedWindowRateLimiter implements RateLimiter{
     public boolean allow() {
         long windowKey = System.currentTimeMillis() / windowSizeInMillis;
         windows.putIfAbsent(windowKey, new AtomicInteger(0));
-        return windows.get(windowKey).incrementAndGet() <= maxRequestPerSec
+        return windows.get(windowKey).incrementAndGet() <= maxRequestsPerWindow
                 && windowKey == System.currentTimeMillis() / windowSizeInMillis;
     }
 
@@ -28,5 +28,13 @@ public class FixedWindowRateLimiter implements RateLimiter{
         windows.keySet().forEach(key -> {
             if (key < curWindowKey) windows.remove(key);
         });
+    }
+
+    public void setMaxRequestsPerWindow(int maxRequestsPerWindow) {
+        this.maxRequestsPerWindow = maxRequestsPerWindow;
+    }
+
+    public int getMaxRequestsPerWindow() {
+        return maxRequestsPerWindow;
     }
 }
