@@ -23,9 +23,7 @@ public class FixedWindowRateLimiterTest {
             results.add(limiter.allow());
             doSleepMillis(100);
         }
-        for (Boolean result: results) {
-            Assert.assertTrue(result);
-        }
+        results.forEach(Assert::assertTrue);
     }
 
     @Test
@@ -40,9 +38,7 @@ public class FixedWindowRateLimiterTest {
             results.add(limiter.allow());
             doSleepMillis(100);
         }
-        for (Boolean result: results) {
-            Assert.assertFalse(result);
-        }
+        results.forEach(Assert::assertFalse);
     }
 
     @Test
@@ -67,9 +63,7 @@ public class FixedWindowRateLimiterTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        for (Boolean result: results) {
-            Assert.assertTrue(result);
-        }
+        results.forEach(Assert::assertTrue);
     }
 
     @Test
@@ -101,8 +95,8 @@ public class FixedWindowRateLimiterTest {
             if (result) success++;
             else fail++;
         }
-        Assert.assertEquals(success, amountOfIterations * amountOfThreads);
-        Assert.assertEquals(fail, amountOfIterations * amountOfThreads);
+        Assert.assertEquals(amountOfIterations * amountOfThreads, success);
+        Assert.assertEquals(amountOfIterations * amountOfThreads, fail);
     }
 
     @Test
@@ -112,9 +106,9 @@ public class FixedWindowRateLimiterTest {
             limiter.allow();
             doSleepMillis(100);
         }
-        Assert.assertEquals(limiter.windows.size(), 10);
+        Assert.assertEquals(amountOfIterations, limiter.windows.size());
         limiter.cleanWindows();
-        Assert.assertEquals(limiter.windows.size(), 0);
+        Assert.assertEquals(0, limiter.windows.size());
     }
 
     @Test
@@ -125,9 +119,9 @@ public class FixedWindowRateLimiterTest {
             doSleepMillis(100);
         }
         limiter.allow();
-        Assert.assertEquals(limiter.windows.size(), 11);
+        Assert.assertEquals(amountOfIterations + 1, limiter.windows.size());
         limiter.cleanWindows();
-        Assert.assertEquals(limiter.windows.size(), 1);
+        Assert.assertEquals(1, limiter.windows.size());
     }
 
     static void doSleepMillis(int millis) {
