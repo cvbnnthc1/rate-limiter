@@ -17,29 +17,29 @@ public class FixedWindowRateLimiterNodeTest {
     private final int amountOfThreads = 5;
 
     @Test
-    public void allowFoUser_returnTrue_whenLimitForUserIsNotExceeded() {
+    public void allowFoClient_returnTrue_whenLimitForClientIsNotExceeded() {
         FixedWindowRateLimiterNode node = new FixedWindowRateLimiterNode();
-        node.addUser(0, 3 * amountOfThreads, 100);
-        node.addUser(1, 5 * amountOfThreads, 100);
+        node.addClient(0, 3 * amountOfThreads, 100);
+        node.addClient(1, 5 * amountOfThreads, 100);
         Collection<Boolean> results = new ConcurrentLinkedDeque<>();
         List<Thread> threads = new ArrayList<>();
         CountDownLatch endSignal = new CountDownLatch(amountOfThreads);
         Runnable task1 = () -> {
             for (int i = 0; i < amountOfIterations; i++) {
-                results.add(node.allowFoUser(0));
-                results.add(node.allowFoUser(0));
-                results.add(node.allowFoUser(0));
+                results.add(node.allowFoClient(0));
+                results.add(node.allowFoClient(0));
+                results.add(node.allowFoClient(0));
                 doSleepMillis(100);
             }
             endSignal.countDown();
         };
         Runnable task2 = () -> {
             for (int i = 0; i < amountOfIterations; i++) {
-                results.add(node.allowFoUser(1));
-                results.add(node.allowFoUser(1));
-                results.add(node.allowFoUser(1));
-                results.add(node.allowFoUser(1));
-                results.add(node.allowFoUser(1));
+                results.add(node.allowFoClient(1));
+                results.add(node.allowFoClient(1));
+                results.add(node.allowFoClient(1));
+                results.add(node.allowFoClient(1));
+                results.add(node.allowFoClient(1));
                 doSleepMillis(100);
             }
             endSignal.countDown();
@@ -58,25 +58,25 @@ public class FixedWindowRateLimiterNodeTest {
     }
 
     @Test
-    public void allowFoUser_returnTrue_whenLimitForUserIsExceeded() {
+    public void allowFoClient_returnTrue_whenLimitForClientIsExceeded() {
         FixedWindowRateLimiterNode node = new FixedWindowRateLimiterNode();
-        node.addUser(0, amountOfThreads, 100);
-        node.addUser(1, amountOfThreads, 100);
+        node.addClient(0, amountOfThreads, 100);
+        node.addClient(1, amountOfThreads, 100);
         Collection<Boolean> results = new ConcurrentLinkedDeque<>();
         List<Thread> threads = new ArrayList<>();
         CountDownLatch endSignal = new CountDownLatch(amountOfThreads);
         Runnable task1 = () -> {
             for (int i = 0; i < amountOfIterations; i++) {
-                results.add(node.allowFoUser(0));
-                results.add(node.allowFoUser(0));
+                results.add(node.allowFoClient(0));
+                results.add(node.allowFoClient(0));
                 doSleepMillis(100);
             }
             endSignal.countDown();
         };
         Runnable task2 = () -> {
             for (int i = 0; i < amountOfIterations; i++) {
-                results.add(node.allowFoUser(1));
-                results.add(node.allowFoUser(1));
+                results.add(node.allowFoClient(1));
+                results.add(node.allowFoClient(1));
                 doSleepMillis(100);
             }
             endSignal.countDown();
@@ -102,68 +102,68 @@ public class FixedWindowRateLimiterNodeTest {
     }
 
     @Test
-    public void addUser() {
+    public void addClient() {
         FixedWindowRateLimiterNode node = new FixedWindowRateLimiterNode();
-        node.addUser(0, 5, 100);
-        assertNotNull(node.limitersForUsers.get(0));
+        node.addClient(0, 5, 100);
+        assertNotNull(node.limitersForClients.get(0));
     }
 
     @Test
     public void cleanWindows_deleteAllOldWindows() {
         FixedWindowRateLimiterNode node = new FixedWindowRateLimiterNode();
-        node.addUser(0, 3, 100);
-        node.addUser(1, 3, 100);
+        node.addClient(0, 3, 100);
+        node.addClient(1, 3, 100);
         for (int i = 0; i < amountOfIterations; i++) {
-            node.allowFoUser(0);
-            node.allowFoUser(1);
+            node.allowFoClient(0);
+            node.allowFoClient(1);
             doSleepMillis(100);
         }
-        assertEquals(amountOfIterations, node.limitersForUsers.get(0).windows.size());
-        assertEquals(amountOfIterations, node.limitersForUsers.get(1).windows.size());
+        assertEquals(amountOfIterations, node.limitersForClients.get(0).windows.size());
+        assertEquals(amountOfIterations, node.limitersForClients.get(1).windows.size());
         node.cleanWindows();
-        assertEquals(0, node.limitersForUsers.get(0).windows.size());
-        assertEquals(0, node.limitersForUsers.get(1).windows.size());
+        assertEquals(0, node.limitersForClients.get(0).windows.size());
+        assertEquals(0, node.limitersForClients.get(1).windows.size());
     }
 
     @Test
     public void cleanWindows_deleteAllOldWindows_andNotDeleteNewWindows() {
         FixedWindowRateLimiterNode node = new FixedWindowRateLimiterNode();
-        node.addUser(0, 3, 100);
-        node.addUser(1, 3, 100);
+        node.addClient(0, 3, 100);
+        node.addClient(1, 3, 100);
         for (int i = 0; i < amountOfIterations; i++) {
-            node.allowFoUser(0);
-            node.allowFoUser(1);
+            node.allowFoClient(0);
+            node.allowFoClient(1);
             doSleepMillis(100);
         }
-        node.allowFoUser(0);
-        node.allowFoUser(1);
-        assertEquals(amountOfIterations + 1, node.limitersForUsers.get(0).windows.size());
-        assertEquals(amountOfIterations + 1, node.limitersForUsers.get(1).windows.size());
+        node.allowFoClient(0);
+        node.allowFoClient(1);
+        assertEquals(amountOfIterations + 1, node.limitersForClients.get(0).windows.size());
+        assertEquals(amountOfIterations + 1, node.limitersForClients.get(1).windows.size());
         node.cleanWindows();
-        assertEquals(1, node.limitersForUsers.get(0).windows.size());
-        assertEquals(1, node.limitersForUsers.get(1).windows.size());
+        assertEquals(1, node.limitersForClients.get(0).windows.size());
+        assertEquals(1, node.limitersForClients.get(1).windows.size());
     }
 
     @Test
     public void resize() {
         FixedWindowRateLimiterNode node = new FixedWindowRateLimiterNode();
-        node.addUser(0, 2, 100);
-        node.addUser(1, 2, 100);
+        node.addClient(0, 2, 100);
+        node.addClient(1, 2, 100);
         List<Boolean> successResults = new ArrayList<>();
         List<Boolean> failResults = new ArrayList<>();
         for (int i = 0; i < amountOfIterations; i++) {
-            successResults.add(node.allowFoUser(0));
-            successResults.add(node.allowFoUser(0));
-            successResults.add(node.allowFoUser(1));
-            successResults.add(node.allowFoUser(1));
+            successResults.add(node.allowFoClient(0));
+            successResults.add(node.allowFoClient(0));
+            successResults.add(node.allowFoClient(1));
+            successResults.add(node.allowFoClient(1));
             doSleepMillis(100);
         }
         node.resize(0.5f);
         for (int i = 0; i < amountOfIterations; i++) {
-            successResults.add(node.allowFoUser(0));
-            failResults.add(node.allowFoUser(0));
-            successResults.add(node.allowFoUser(1));
-            failResults.add(node.allowFoUser(1));
+            successResults.add(node.allowFoClient(0));
+            failResults.add(node.allowFoClient(0));
+            successResults.add(node.allowFoClient(1));
+            failResults.add(node.allowFoClient(1));
             doSleepMillis(100);
         }
         successResults.forEach(Assert::assertTrue);
