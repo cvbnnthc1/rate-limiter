@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FixedWindowRateLimiterNode {
     final Map<Integer, FixedWindowRateLimiter> limitersForClients = new ConcurrentHashMap<>();
 
-    public boolean allowFoClient(int clientId) {
+    public boolean allowForClient(int clientId) {
         return limitersForClients.get(clientId).allow();
     }
 
